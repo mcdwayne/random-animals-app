@@ -78,6 +78,17 @@ body {
     background: white;
 }
 
+.btn-shopify {
+    background: linear-gradient(45deg, #96bf47, #5e8e3e);
+    color: white;
+    font-size: 0.9rem;
+    padding: 10px 20px;
+}
+
+.btn-shopify:hover {
+    background: linear-gradient(45deg, #8bb33f, #547d37);
+}
+
 .animal-display {
     margin-bottom: 40px;
     min-height: 400px;
@@ -145,6 +156,24 @@ body {
     transform: scale(1.05);
 }
 
+.image-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.3);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.animal-image:hover .image-overlay {
+    opacity: 1;
+}
+
 .animal-info {
     padding: 30px;
 }
@@ -179,6 +208,7 @@ body {
     display: flex;
     gap: 10px;
     flex-wrap: wrap;
+    margin-bottom: 20px;
 }
 
 .badge {
@@ -192,6 +222,56 @@ body {
 
 .badge-secondary {
     background: #3498db;
+}
+
+/* Shopify Integration Styles */
+.shopify-section {
+    margin-top: 20px;
+    padding-top: 20px;
+    border-top: 1px solid #eee;
+}
+
+.print-options {
+    margin-top: 15px;
+}
+
+.print-options h4 {
+    color: #2c3e50;
+    margin-bottom: 10px;
+    font-size: 1.1rem;
+}
+
+.print-sizes {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.print-size-option {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    cursor: pointer;
+    padding: 8px;
+    border-radius: 8px;
+    transition: background-color 0.2s ease;
+}
+
+.print-size-option:hover {
+    background-color: #f8f9fa;
+}
+
+.print-size-option input[type="radio"] {
+    accent-color: #96bf47;
+}
+
+.print-size-option span {
+    color: #555;
+    font-size: 0.9rem;
+}
+
+#shopify-buy-button {
+    margin-bottom: 15px;
 }
 
 .error-message {
@@ -292,6 +372,124 @@ body {
     padding: 40px;
 }
 
+/* Shopping Cart Modal */
+.modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+}
+
+.modal-content {
+    background: white;
+    border-radius: 20px;
+    max-width: 500px;
+    width: 90%;
+    max-height: 80vh;
+    overflow-y: auto;
+    box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+}
+
+.modal-header {
+    padding: 20px 30px;
+    border-bottom: 1px solid #eee;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.modal-header h3 {
+    color: #2c3e50;
+    margin: 0;
+}
+
+.close-btn {
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    cursor: pointer;
+    color: #666;
+    padding: 0;
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    transition: background-color 0.2s ease;
+}
+
+.close-btn:hover {
+    background-color: #f8f9fa;
+}
+
+.modal-body {
+    padding: 30px;
+}
+
+.cart-items {
+    margin-bottom: 20px;
+}
+
+.cart-item {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    padding: 15px 0;
+    border-bottom: 1px solid #eee;
+}
+
+.cart-item:last-child {
+    border-bottom: none;
+}
+
+.cart-item img {
+    width: 60px;
+    height: 60px;
+    object-fit: cover;
+    border-radius: 8px;
+}
+
+.cart-item-info {
+    flex: 1;
+}
+
+.cart-item-name {
+    font-weight: 600;
+    color: #2c3e50;
+    margin-bottom: 5px;
+}
+
+.cart-item-details {
+    font-size: 0.9rem;
+    color: #666;
+}
+
+.cart-item-price {
+    font-weight: 600;
+    color: #96bf47;
+}
+
+.cart-total {
+    text-align: right;
+    padding: 20px 0;
+    border-top: 2px solid #eee;
+    font-size: 1.2rem;
+    color: #2c3e50;
+}
+
+.modal-footer {
+    padding: 20px 30px;
+    border-top: 1px solid #eee;
+    text-align: center;
+}
+
 .hidden {
     display: none !important;
 }
@@ -325,6 +523,15 @@ body {
     .favorites-grid {
         grid-template-columns: 1fr;
     }
+    
+    .print-sizes {
+        flex-direction: column;
+    }
+    
+    .modal-content {
+        width: 95%;
+        margin: 20px;
+    }
 }
 
 @media (max-width: 480px) {
@@ -342,5 +549,11 @@ body {
     
     .animal-info h2 {
         font-size: 1.5rem;
+    }
+    
+    .modal-header,
+    .modal-body,
+    .modal-footer {
+        padding: 15px 20px;
     }
 }

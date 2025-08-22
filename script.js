@@ -3,11 +3,14 @@ class RandomAnimalsApp {
         this.viewCount = 0;
         this.favorites = JSON.parse(localStorage.getItem('animalFavorites') || '[]');
         this.currentAnimal = null;
+        this.cart = JSON.parse(localStorage.getItem('animalCart') || '[]');
+        this.printsSold = parseInt(localStorage.getItem('printsSold') || '0');
         
         this.initializeElements();
         this.bindEvents();
         this.updateStats();
         this.renderFavorites();
+        this.initializeShopify();
     }
 
     initializeElements() {
@@ -26,7 +29,15 @@ class RandomAnimalsApp {
             errorMessage: document.getElementById('errorMessage'),
             viewCount: document.getElementById('viewCount'),
             favoriteCount: document.getElementById('favoriteCount'),
-            favoritesList: document.getElementById('favoritesList')
+            printsSold: document.getElementById('printsSold'),
+            favoritesList: document.getElementById('favoritesList'),
+            buyPrintBtn: document.getElementById('buyPrintBtn'),
+            shopifyBuyButton: document.getElementById('shopify-buy-button'),
+            cartModal: document.getElementById('cartModal'),
+            cartItems: document.getElementById('cartItems'),
+            cartTotal: document.getElementById('cartTotal'),
+            closeCart: document.getElementById('closeCart'),
+            checkoutBtn: document.getElementById('checkoutBtn')
         };
     }
 
@@ -38,6 +49,180 @@ class RandomAnimalsApp {
         
         // Add favorite functionality to animal name
         this.elements.animalName.addEventListener('click', () => this.toggleFavorite());
+        
+        // Shopify integration events
+        this.elements.buyPrintBtn.addEventListener('click', () => this.addToCart());
+        this.elements.closeCart.addEventListener('click', () => this.closeCartModal());
+        this.elements.checkoutBtn.addEventListener('click', () => this.proceedToCheckout());
+        
+        // Close modal when clicking outside
+        this.elements.cartModal.addEventListener('click', (e) => {
+            if (e.target === this.elements.cartModal) {
+                this.closeCartModal();
+            }
+        });
+    }
+
+    initializeShopify() {
+        // Initialize Shopify Buy Button
+        if (window.ShopifyBuy) {
+            this.createShopifyButton();
+        } else {
+            // Fallback if Shopify SDK doesn't load
+            console.log('Shopify SDK not loaded, using fallback cart system');
+        }
+    }
+
+    createShopifyButton() {
+        try {
+            const client = window.ShopifyBuy.buildClient({
+                domain: 'your-shop.myshopify.com', // Replace with your actual Shopify domain
+                storefrontAccessToken: 'your-storefront-access-token' // Replace with your actual token
+            });
+
+            window.ShopifyBuy.UI.onReady(client).then((ui) => {
+                ui.createComponent('product', {
+                    id: 'your-product-id', // Replace with your actual product ID
+                    node: this.elements.shopifyBuyButton,
+                    moneyFormat: '%24%7B%7Bamount%7D%7D',
+                    options: {
+                        product: {
+                            styles: {
+                                button: {
+                                    'background-color': '#96bf47',
+                                    'border-radius': '25px',
+                                    'font-size': '16px',
+                                    'font-weight': '600',
+                                    'padding': '12px 24px'
+                                }
+                            }
+                        }
+                    }
+                });
+            });
+        } catch (error) {
+            console.log('Shopify integration failed, using fallback system:', error);
+        }
+    }
+
+    addToCart() {
+        if (!this.currentAnimal) return;
+
+        const selectedSize = document.querySelector('input[name="printSize"]:checked').value;
+        const price = this.getPriceForSize(selectedSize);
+        
+        const cartItem = {
+            id: Date.now(),
+            animal: this.currentAnimal,
+            size: selectedSize,
+            price: price,
+            addedAt: new Date().toISOString()
+        };
+
+        this.cart.push(cartItem);
+        localStorage.setItem('animalCart', JSON.stringify(this.cart));
+        
+        this.showCartModal();
+        this.updateStats();
+        
+        // Show success message
+        this.showNotification('Print added to cart!', 'success');
+    }
+
+    getPriceForSize(size) {
+        const prices = {
+            '8x10': 24.99,
+            '11x14': 34.99,
+            '16x20': 49.99
+        };
+        return prices[size] || 24.99;
+    }
+
+    showCartModal() {
+        this.elements.cartModal.classList.remove('hidden');
+        this.renderCart();
+    }
+
+    closeCartModal() {
+        this.elements.cartModal.classList.add('hidden');
+    }
+
+    renderCart() {
+        if (this.cart.length === 0) {
+            this.elements.cartItems.innerHTML = '<p style="text-align: center; color: #666;">Your cart is empty</p>';
+            this.elements.cartTotal.textContent = '0.00';
+            return;
+        }
+
+        this.elements.cartItems.innerHTML = this.cart.map(item => `
+            <div class="cart-item">
+                <img src="${item.animal.image}" alt="${item.animal.name}">
+                <div class="cart-item-info">
+                    <div class="cart-item-name">${item.animal.name}</div>
+                    <div class="cart-item-details">${item.size} Print • ${item.animal.type}</div>
+                </div>
+                <div class="cart-item-price">$${item.price.toFixed(2)}</div>
+            </div>
+        `).join('');
+
+        const total = this.cart.reduce((sum, item) => sum + item.price, 0);
+        this.elements.cartTotal.textContent = total.toFixed(2);
+    }
+
+    proceedToCheckout() {
+        if (this.cart.length === 0) return;
+
+        // Simulate successful purchase
+        this.printsSold += this.cart.length;
+        localStorage.setItem('printsSold', this.printsSold.toString());
+        
+        // Clear cart
+        this.cart = [];
+        localStorage.setItem('animalCart', JSON.stringify(this.cart));
+        
+        this.closeCartModal();
+        this.updateStats();
+        this.showNotification('Order placed successfully!', 'success');
+    }
+
+    showNotification(message, type = 'info') {
+        const notification = document.createElement('div');
+        notification.className = `notification notification-${type}`;
+        notification.textContent = message;
+        
+        document.body.appendChild(notification);
+        
+        // Add styles
+        notification.style.cssText = `
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: ${type === 'success' ? '#96bf47' : '#3498db'};
+            color: white;
+            padding: 15px 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            z-index: 1001;
+            animation: slideInRight 0.3s ease-out;
+        `;
+        
+        // Add animation keyframes
+        if (!document.querySelector('#notification-styles')) {
+            const style = document.createElement('style');
+            style.id = 'notification-styles';
+            style.textContent = `
+                @keyframes slideInRight {
+                    from { transform: translateX(100%); opacity: 0; }
+                    to { transform: translateX(0); opacity: 1; }
+                }
+            `;
+            document.head.appendChild(style);
+        }
+        
+        // Remove after 3 seconds
+        setTimeout(() => {
+            notification.remove();
+        }, 3000);
     }
 
     async fetchRandomAnimal() {
@@ -264,6 +449,7 @@ class RandomAnimalsApp {
     updateStats() {
         this.elements.viewCount.textContent = this.viewCount;
         this.elements.favoriteCount.textContent = this.favorites.length;
+        this.elements.printsSold.textContent = this.printsSold;
     }
 
     renderFavorites() {
