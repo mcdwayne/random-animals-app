@@ -77,7 +77,7 @@ class RandomAnimalsApp {
         try {
             const client = window.ShopifyBuy.buildClient({
                 domain: 'your-shop.myshopify.com', // Replace with your actual Shopify domain
-                storefrontAccessToken: 'your-storefront-access-token' // Replace with your actual token
+                storefrontAccessToken: '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' // Replace with your actual token
             });
 
             window.ShopifyBuy.UI.onReady(client).then((ui) => {
